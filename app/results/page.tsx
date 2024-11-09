@@ -5,31 +5,40 @@ import { searchVideos } from "@/lib/actions/video.actions";
 import { Video } from "@prisma/client";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import { Suspense } from "react";
 
-const page = () => {
-  const searchParams = useSearchParams();
-  const search_query = searchParams.get("search_query");
-  const [videos, setVideos] = useState([]);
+const Page = () => {
+  const [searchQuery, setSearchQuery] = useState<string | null>(null);
+  const [videos, setVideos] = useState<Video[]>([]);
+
+  // Use `useEffect` to access `useSearchParams` after initial render
+  useEffect(() => {
+    const searchParams = useSearchParams();
+    setSearchQuery(searchParams.get("search_query"));
+  }, []);
 
   useEffect(() => {
     const getVideos = async () => {
+      if (!searchQuery) return;
       try {
-        const data: any = await searchVideos(search_query);
+        const data: any = await searchVideos(searchQuery);
         setVideos(data);
       } catch (error) {
-        console.log(error);
+        console.error(error);
       }
     };
     getVideos();
-  }, [search_query]);
+  }, [searchQuery]);
 
   return (
-    <div className="ml-14 pr-14 h-[calc(100vh-4rem)] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-800 scrollbar-track-[#121212]">
-      {videos?.map((video: Video) => (
-        <ResultVideoCard key={video.id} video={video} />
-      ))}
-    </div>
+    <Suspense fallback={<div>Loading...</div>}>
+      <div className="ml-14 pr-14 h-[calc(100vh-4rem)] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-800 scrollbar-track-[#121212]">
+        {videos.map((video) => (
+          <ResultVideoCard key={video.id} video={video} />
+        ))}
+      </div>
+    </Suspense>
   );
 };
 
-export default page;
+export default Page;

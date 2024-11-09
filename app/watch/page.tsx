@@ -9,7 +9,9 @@ import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
-const page = () => {
+const WatchPage = () => {
+  if (typeof window === "undefined") return null; // Ensure it only runs on the client
+
   const searchParams = useSearchParams();
   const v = searchParams.get("v");
   const [video, setVideo] = useState<any>({});
@@ -83,4 +85,4 @@ const page = () => {
   );
 };
 
-export default page;
+export default WatchPage;
